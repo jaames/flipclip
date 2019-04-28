@@ -1,16 +1,17 @@
 {
-  "name": "@jaames/clipnote-flipnote-importer",
+  "name": "FlipClip",
   "version": "1.0.0",
-  "description": "",
+  "description": "Web tool for converting flipnote animations to the clipnote file format",
   "main": "src/index.js",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "poi --serve",
     "build": "poi --prod"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "James Daniel",
+  "license": "MIT",
   "devDependencies": {
     "poi": "^12.6.5",
     "node-sass": "^4.12.0",
