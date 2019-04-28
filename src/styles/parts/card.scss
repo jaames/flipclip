@@ -1,0 +1,35 @@
+.Card {
+  .Card__head,
+  .Card__body,
+  .Card__foot {
+    background: $background-color;
+    padding: 16px;
+    border-radius: 0;
+
+    &:first-child {
+      border-top-right-radius: $global-border-radius;
+      border-top-left-radius: $global-border-radius;
+      padding-bottom: 12px;
+    }
+
+    &:last-child {
+      border-bottom-right-radius: $global-border-radius;
+      border-bottom-left-radius: $global-border-radius;
+      padding-top: 12px;
+    }
+
+    &:only-child {
+      padding: 16px;
+    }
+  }
+
+  .Card__head {
+    border-bottom: 1px solid $secondary-background-color;
+  }
+
+  .Card__foot {
+    border-top: 1px solid $secondary-background-color;
+  }
+
+}
+

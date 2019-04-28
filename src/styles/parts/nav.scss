@@ -1,0 +1,21 @@
+.Nav {
+  display: flex;
+
+  > * {
+    flex: 1;
+  }
+}
+
+.Nav__left {
+  text-align: left;
+}
+
+.Nav__title {
+  font-weight: bold;
+  text-align: center;
+}
+
+.Nav__right {
+  text-align: right;
+}
+

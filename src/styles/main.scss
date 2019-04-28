@@ -1,0 +1,85 @@
+@import url('https://unicons.iconscout.com/release/v0.0.3/css/unicons.css');
+@import '~css-reset-and-normalize/scss/reset-and-normalize';
+@import './config.scss';
+
+body {
+  background-color: $secondary-background-color;
+  line-height: 150%;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+a {
+  color: $primary-color;
+  cursor: pointer;
+}
+
+p {
+  margin-bottom: 1em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+  line-height: 150%;
+  margin-bottom: .25em;
+}
+
+h1 {
+  font-size: 1.8em;
+}
+
+@import './parts/card.scss';
+@import './parts/nav.scss';
+@import './parts/button.scss';
+@import './parts/dropzone.scss';
+@import './parts/player.scss';
+@import './parts/progress.scss';
+
+.Layout {
+  width: 100%;
+  width: 420px;
+  margin: 0 auto;
+}
+
+.Hero {
+  padding-bottom: 0;
+}
+
+.Input {
+  height: 42px;
+  border: 2px solid $secondary-background-color;
+  border-radius: 4px;
+  padding: 7px 14px;
+
+  &:disabled {
+    color: #444;
+    background: #ccc;
+  }
+}
+
+label {
+  color: $secondary-text-color;
+  font-size: 0.9em;
+}
+
+.TextInput {
+  width: 100%;
+}
+
+.FormGroup {
+  display: flex;
+  margin: 0 -7px;
+  align-items: flex-end;
+
+  & > .Input, & > .Button, & > .FormElement {
+    margin: 7px;
+  }
+
+  .FormElement {
+    flex: 1;
+  }
+}
+

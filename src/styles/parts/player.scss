@@ -1,0 +1,30 @@
+.Player {
+
+  .Player__canvasBox {
+    background: $secondary-background-color;
+    border-radius: $global-border-radius;;
+    display: flex;
+    justify-content: center;
+  }
+
+  .Player__canvas {
+    background: $background-color;
+  }
+
+  canvas {
+    display: block;
+  }
+
+  &.Player--ppm {
+    .Player__canvas {
+      padding: 24px 32px;
+    }
+  }
+}
+
+.Player__controls {
+  color: $primary-color;
+  display: flex;
+  justify-content: center;
+  font-size: 1.5rem;
+}

@@ -1,0 +1,20 @@
+.Progress {
+
+  .Progress__status {
+    color: $secondary-text-color;
+    font-size: 0.9em;
+  }
+
+  .Progress__bar {
+    height: 4px;
+    position: relative;
+  }
+
+  .Progress__level {
+    position: absolute;
+    left: 0;
+    height: 4px;
+    border-radius: 2px;
+    background: $primary-color;
+  }
+}

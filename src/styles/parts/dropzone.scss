@@ -1,0 +1,13 @@
+.Dropzone {
+  color: $secondary-text-color;
+  border: 2px dashed $secondary-background-color;
+  border-radius: $global-border-radius;
+  padding: 14px;
+  padding-bottom: 20px;
+  text-align: center;
+}
+
+.Dropzone__prompt {
+  margin: 0 28px;
+  margin-bottom: 14px;
+}
