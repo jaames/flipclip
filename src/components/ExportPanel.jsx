@@ -21,16 +21,19 @@ export class ExportPanel extends Component {
       outputName: `${meta.current.filename}.clip`,
       userId: ''
     };
-
   }
 
   convertToFile() {
+    // don't do anything if convertion is already in progress
+    if (this.state.isConvertionInProgress) {
+      return null;
+    }
     this.setState({
       progress: 0,
-      progressStatus: 'Converting...',
+      progressStatus: 'Preparing...',
       isConvertionInProgress: true
     });
-    // wrap  in settimeout so it doesn't block ui renders
+    // wrap in setTimeout so it doesn't block UI updates
     nextTick(() => {
       const filename = this.state.outputName.match(/(\S+)\.clip/);
       const filestem = filename ? filename[1] : 'note';
@@ -40,9 +43,9 @@ export class ExportPanel extends Component {
         this.setState({progressStatus: 'Writing Frames...'});
       });
       exporter.writeLayers((progress) => {
-        setTimeout(() => {
+        nextTick(() => {
           this.setState({progress});
-        })
+        });
       });
       nextTick(() => {
         this.setState({progressStatus: 'Writing Thumbnail...'});
@@ -70,7 +73,7 @@ export class ExportPanel extends Component {
           <a className="Nav__left" onClick={e => this.props.onExit()}>
             <i className="uil uil-arrow-left"></i>Return
           </a>
-          <span className="Nav__title">Export</span>
+          <span className="Nav__title">Convert</span>
           <span className="Nav__right"></span>
         </div>
         <div className="Card__body">
@@ -80,6 +83,7 @@ export class ExportPanel extends Component {
           </div>
           <FlipnotePlayer
             player={ this.player }
+            disabled={ this.state.isConvertionInProgress }
           />
           <div className="FormGroup">
             <div className="FormElement">

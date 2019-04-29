@@ -10,7 +10,7 @@ export const Index = function(props) {
             FlipClip
           </h1>
           <p className="Hero__sub">
-            A small utility to convert animations from Flipnote Studio or Flipnote Studio 3D into the Clipnote format.
+            A small utility to convert animations from <a href="https://en.wikipedia.org/wiki/Flipnote_Studio">Flipnote Studio</a> or <a href="https://en.wikipedia.org/wiki/Flipnote_Studio_3D">Flipnote Studio 3D</a> into the <a href="https://calcium-chan.itch.io/clipnote">Clipnote</a> format.
           </p>
         </header>
         <Dropzone 
@@ -32,6 +32,9 @@ export const Index = function(props) {
             </section>
           )}
         </Dropzone>
+        <p>
+          FlipClip was built by James Daniel (github, twitter) on top of the flipnote.js library. The source code is available on GitHub under the MIT license. I'm not affiliated with Flipnote Studio or Clipnote in any way, but I think they're both pretty neat. :)
+        </p>
       </div>
     </div>
   );

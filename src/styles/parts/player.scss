@@ -2,7 +2,7 @@
 
   .Player__canvasBox {
     background: $secondary-background-color;
-    border-radius: $global-border-radius;;
+    border-radius: $global-border-radius;
     display: flex;
     justify-content: center;
   }
@@ -27,4 +27,17 @@
   display: flex;
   justify-content: center;
   font-size: 1.5rem;
+
+  .uil {
+    cursor: pointer;
+  }
+
+  .Player.disabled & {
+    color: $secondary-background-color;
+    pointer-events: none;
+
+    .uil {
+      cursor: not-allowed;
+    }
+  }
 }

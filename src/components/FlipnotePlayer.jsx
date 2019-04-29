@@ -12,12 +12,27 @@ export class FlipnotePlayer extends Component {
 
   componentDidMount() {
     this.player = this.props.player;
+    this._wasPlaying = false;
     this._canvasWrapper.appendChild(this.player.canvas.el);
   }
 
   componentWillUnmount() {
     this._canvasWrapper.removeChild(this.player.canvas.el);
+    this._wasPlaying = false;
     this.player = null;
+  }
+
+  componentDidUpdate(prevProps) {
+    const newProps = this.props;
+    // if the player was disabled in the last update, pause playback
+    if (prevProps.disabled === false && newProps.disabled === true) {
+      this._wasPlaying = this.state.paused === false;
+      this.pause();
+    }
+    // if the player was re-enabled in the last update, resume playback
+    else if (prevProps.disabled === true && newProps.disabled === false && this._wasPlaying) {
+      this.play();
+    }
   }
 
   play() {
@@ -50,8 +65,9 @@ export class FlipnotePlayer extends Component {
 
   render() {
     const { props, state } = this;
+    const noteType = props.player.note.type.toLowerCase()
     return (
-      <div className={`Player Player--${this.props.player.note.type.toLowerCase()}`}>
+      <div className={`Player Player--${noteType} ${props.disabled ? 'disabled' : ''}`}>
         <div className="Player__canvasBox">
           <div className="Player__canvas" ref={el => this._canvasWrapper = el}></div>
         </div>
