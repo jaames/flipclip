@@ -27,7 +27,7 @@ A small utility to convert animations from [Flipnote Studio](https://en.wikipedi
 ### Credits
 
 * [jaames](https://github.com/jaames) - author
-* [calcium](https://twitter.com/calcium_chan) - clipnote dev, provided helpful info about their animation format
+* [calcium](http://calciumchan.com/) - clipnote dev, provided helpful info about their animation format
 
 ### Building
 
