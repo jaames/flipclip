@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { reject } from 'q';
 
 export class ClipExporter {
 
@@ -14,7 +15,7 @@ export class ClipExporter {
   }
 
   // source should be a flipnote.js kwz or ppm parser instance
-  loadSource(source) {
+  async loadSource(source) {
     // set up output zip
     this.output = new JSZip();
     // clear current canvas content
@@ -36,6 +37,7 @@ export class ClipExporter {
     this.frame = null;
     // reset decoder context
     this._currentFrame = -1;
+    return true;
   }
 
   // save .zip output
@@ -44,7 +46,7 @@ export class ClipExporter {
     this.output.generateAsync({type:'blob'}).then(callback);
   }
 
-  writeMeta() {
+  async writeMeta() {
     const source = this.source;
     const meta = source.meta;
     const ini = [
@@ -59,33 +61,56 @@ export class ClipExporter {
       `replay="${meta.loop}"`
     ].join('\n');
     this.output.file('data.ini', ini);
+    return true;
   }
 
-  writeThumb() {
+  async writeThumb() {
     const thumbData = this.getFrameData(this.source.thumbFrameIndex);
     this.output.file('thumb.png', thumbData, {base64:true});
+    return true;
   }
 
-  writeLayers(progressCallback) {
+  writeLayers(updateProgress) {
     const frameCount = this.source.frameCount;
     const layerCount = this.sourceType === 'KWZ' ? 3 : 2;
     const imageCount = frameCount * layerCount;
-    // loop through frames
-    for (let frameIndex = 0; frameIndex < frameCount; frameIndex++) {
-      // loop through layers
-      for (let layerIndex = 0; layerIndex < layerCount; layerIndex++) {
-        // (in clipnote, 0 is the bottom layer...)
-        let clipnoteLayerIndex = layerCount - layerIndex - 1;
-        // get layer PNG image data
-        let layerData = this.getLayerData(frameIndex, layerIndex, clipnoteLayerIndex == 0);
-        // add layer image to zip
-        this.output.file(`${frameIndex},${clipnoteLayerIndex}.png`, layerData, {base64:true});
-        // figure out progres percentage
-        let imageIndex = frameIndex * layerCount + layerIndex;
+
+    // iteration loop
+    let imageIndex = 0;
+    const iteration = async (done) => {
+      if (imageIndex >= imageCount) {
+        // we're done!
+        await updateProgress(100);
+        done();
+      } else {
+        let frameIndex = Math.floor(imageIndex / 3);
+        let layerIndex = imageIndex % layerCount;
+        // write layer
+        this.writeLayer(frameIndex, layerIndex);
+        // calculate progress
         let progress = (imageIndex / imageCount) * 100;
-        if (progressCallback) progressCallback(progress);
+        // continue on to the next iteration once the progress update callback is done
+        await updateProgress(progress);
+        imageIndex += 1;
+        iteration(done);
       }
     }
+
+    return new Promise((resolve, reject) => {
+      // start iteration loop
+      iteration(resolve);
+    });
+  }
+
+  async writeLayer(frameIndex, layerIndex) {
+    const layerCount = this.sourceType === 'KWZ' ? 3 : 2;
+    // (in clipnote, 0 is the bottom layer...)
+    const clipnoteLayerIndex = layerCount - layerIndex - 1;
+    // get layer PNG image data
+    const layerData = this.getLayerData(frameIndex, layerIndex, clipnoteLayerIndex == 0);
+    // add layer image to zip
+    this.output.file(`${frameIndex},${clipnoteLayerIndex}.png`, layerData, {base64:true});
+    return true;
   }
 
   // load the palette for a given frame
@@ -128,7 +153,6 @@ export class ClipExporter {
       let g = (clearColor >> 8) & 0xFF;
       let b = (clearColor >> 16) & 0xFF;
       let hexColor = '#' + intToHex(r) + intToHex(g) + intToHex(b);
-      console.log(hexColor);
       this.ctx.fillStyle = hexColor;
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     } else {

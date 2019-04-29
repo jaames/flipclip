@@ -6,10 +6,6 @@ import { ClipExporter } from '../clipnote/ClipExporter';
 
 const exporter = new ClipExporter();
 
-const nextTick = function (fn) {
-  setTimeout(fn, 0);
-}
-
 export class ExportPanel extends Component {
   constructor(props) {
     super(props);
@@ -23,44 +19,50 @@ export class ExportPanel extends Component {
     };
   }
 
-  convertToFile() {
+  setStateSynchronously(newState) {
+    return new Promise(resolve => {
+      this.setState(newState, () => {
+        // react batches setState calls so resolution has to be delayed by one paint frame
+        requestAnimationFrame(resolve);
+      });
+    });
+  }
+
+  async convertToFile() {
     // don't do anything if convertion is already in progress
     if (this.state.isConvertionInProgress) {
       return null;
     }
-    this.setState({
+    await this.setStateSynchronously({
       progress: 0,
       progressStatus: 'Preparing...',
       isConvertionInProgress: true
     });
-    // wrap in setTimeout so it doesn't block UI updates
-    nextTick(() => {
+    await exporter.loadSource(this.player.note);
+    await this.setStateSynchronously({
+      progressStatus: 'Writing metadata...',
+    });
+    await exporter.writeMeta()
+    await this.setStateSynchronously({
+      progressStatus: 'Writing frames...',
+    });
+    await exporter.writeLayers(async (progress) => {
+      await this.setStateSynchronously({progress});
+    })
+    await this.setStateSynchronously({
+      progressStatus: 'Writing thumbnail...',
+    });
+    await exporter.writeThumb();
+    await this.setStateSynchronously({
+      progress: 0,
+      progressStatus: 'Done!',
+      isConvertionInProgress: false
+    });
+    exporter.save(content => {
       const filename = this.state.outputName.match(/(\S+)\.clip/);
       const filestem = filename ? filename[1] : 'note';
-      exporter.loadSource(this.player.note);
-      exporter.writeMeta();
-      nextTick(() => {
-        this.setState({progressStatus: 'Writing Frames...'});
-      });
-      exporter.writeLayers((progress) => {
-        nextTick(() => {
-          this.setState({progress});
-        });
-      });
-      nextTick(() => {
-        this.setState({progressStatus: 'Writing Thumbnail...'});
-      });
-      exporter.writeThumb();
-      exporter.save(content => {
-        saveAs(content, `${filestem}.clip`);
-        this.setState({
-          progress: 0,
-          progressStatus: 'Done!',
-          isConvertionInProgress: false
-        });
-      });
+      saveAs(content, `${filestem}.clip`);
     });
-    
   }
 
   render() {
