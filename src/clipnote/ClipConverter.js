@@ -3,7 +3,7 @@ import loadJs from 'load-js';
 
 const VORBIS_ENCODER_PATH = process.env.NODE_ENV === 'production' ? process.env.PUBLIC_URL + '/lib/' : '/lib/';
 
-export class ClipExporter {
+export class ClipConverter {
 
   constructor(source) {
     // set up drawing canvas
@@ -19,7 +19,7 @@ export class ClipExporter {
 
   async init() {
     if (!this._hasLoadedVorbisLib) {
-      await loadJs([VORBIS_ENCODER_PATH + 'libvorbis.min.js']);
+      await loadJs(VORBIS_ENCODER_PATH + 'libvorbis.min.js');
       this._hasLoadedVorbisLib = true;
       return true;
     } else {
@@ -55,7 +55,7 @@ export class ClipExporter {
 
   // save .zip output
   // file content is based to callback
-  save(callback) {
+  finish(callback) {
     this.output.generateAsync({type:'blob'}).then(callback);
   }
 

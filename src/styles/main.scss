@@ -29,59 +29,29 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: 1.8em;
+  font-size: 1.6em;
 }
 
-@import './parts/card.scss';
-@import './parts/nav.scss';
-@import './parts/button.scss';
-@import './parts/dropzone.scss';
-@import './parts/player.scss';
-@import './parts/progress.scss';
-
 .Layout {
-  width: 100%;
-  width: 420px;
-  margin: 0 auto;
+  // width: 100%;
+  max-width: 420px; // nice
+  flex: 1;
 }
 
 .Hero {
   padding-bottom: 0;
 }
 
-.Input {
-  height: 42px;
-  border: 2px solid $secondary-background-color;
-  border-radius: 4px;
-  padding: 7px 14px;
-
-  &:disabled {
-    color: #444;
-    background: $secondary-background-color;
-    border-color: darken($secondary-background-color, 4);
-  }
-}
-
-label {
+.Meta {
+  margin-top: .75em;
+  font-size: .9em;
   color: $secondary-text-color;
-  font-size: 0.9em;
 }
 
-.TextInput {
-  width: 100%;
-}
-
-.FormGroup {
-  display: flex;
-  margin: 0 -7px;
-  align-items: flex-end;
-
-  & > .Input, & > .Button, & > .FormElement {
-    margin: 7px;
-  }
-
-  .FormElement {
-    flex: 1;
-  }
-}
-
+@import './parts/card.scss';
+@import './parts/nav.scss';
+@import './parts/button.scss';
+@import './parts/form.scss';
+@import './parts/dropzone.scss';
+@import './parts/player.scss';
+@import './parts/progress.scss';

@@ -2,9 +2,9 @@ import { Component } from 'react';
 import { FlipnotePlayer } from './FlipnotePlayer';
 
 import { saveAs } from 'file-saver';
-import { ClipExporter } from '../clipnote/ClipExporter';
+import { ClipConverter } from '../clipnote/ClipConverter';
 
-const exporter = new ClipExporter();
+const converter = new ClipConverter();
 
 export class ExportPanel extends Component {
   constructor(props) {
@@ -28,42 +28,43 @@ export class ExportPanel extends Component {
     });
   }
 
-  async convertToFile() {
+  async convert() {
     // don't do anything if convertion is already in progress
     if (this.state.isConvertionInProgress) {
       return null;
     }
+    // everything has to be async so we can display progress status
     await this.setStateSynchronously({
       progress: 0,
       progressStatus: 'Preparing...',
       isConvertionInProgress: true
     });
-    await exporter.init();
-    await exporter.loadSource(this.player.note);
+    await converter.init();
+    await converter.loadSource(this.player.note);
     await this.setStateSynchronously({
       progressStatus: 'Converting metadata...',
     });
-    await exporter.writeMeta()
+    await converter.writeMeta()
     await this.setStateSynchronously({
       progressStatus: 'Converting audio...',
     });
-    await exporter.writeAudio()
+    await converter.writeAudio()
     await this.setStateSynchronously({
       progressStatus: 'Converting frames...',
     });
-    await exporter.writeLayers(async (progress) => {
+    await converter.writeLayers(async (progress) => {
       await this.setStateSynchronously({progress});
     })
     await this.setStateSynchronously({
       progressStatus: 'Converting thumbnail...',
     });
-    await exporter.writeThumb();
+    await converter.writeThumb();
     await this.setStateSynchronously({
       progress: 0,
       progressStatus: 'Done!',
       isConvertionInProgress: false
     });
-    exporter.save(content => {
+    converter.finish(content => {
       const filename = this.state.outputName.match(/(\S+)\.clip/);
       const filestem = filename ? filename[1] : 'note';
       saveAs(content, `${filestem}.clip`);
@@ -77,7 +78,7 @@ export class ExportPanel extends Component {
     return (
       <div className="Card Card--exportPanel">
         <div className="Card__head Nav">
-          <a className="Nav__left" onClick={e => this.props.onExit()}>
+          <a className="Nav__left" onClick={e => !state.isConvertionInProgress && props.onExit()}>
             <i className="uil uil-arrow-left"></i>Return
           </a>
           <span className="Nav__title">Convert</span>
@@ -90,7 +91,7 @@ export class ExportPanel extends Component {
           </div>
           <FlipnotePlayer
             player={ this.player }
-            disabled={ this.state.isConvertionInProgress }
+            disabled={ state.isConvertionInProgress }
           />
           <div className="FormGroup">
             <div className="FormElement">
@@ -104,7 +105,12 @@ export class ExportPanel extends Component {
                 onChange={e => this.setState({outputName: e.target.value})}
               />
             </div>
-            <button type="button" className="Button" onClick={e => {this.convertToFile()}}>
+            <button 
+              type="button" 
+              className="Button" 
+              disabled={state.isConvertionInProgress} 
+              onClick={e => this.convert()}
+              >
               Convert
             </button>
           </div>

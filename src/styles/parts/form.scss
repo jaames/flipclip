@@ -1,0 +1,37 @@
+
+.Input {
+  height: 42px;
+  border: 2px solid $secondary-background-color;
+  border-radius: 4px;
+  padding: 7px 14px;
+
+  &:disabled {
+    color: #444;
+    background: $secondary-background-color;
+    border-color: darken($secondary-background-color, 4);
+  }
+}
+
+label {
+  color: $secondary-text-color;
+  font-size: 0.9em;
+}
+
+.TextInput {
+  width: 100%;
+}
+
+.FormGroup {
+  display: flex;
+  margin: 0 -7px;
+  align-items: flex-end;
+
+  & > .Input, & > .Button, & > .FormElement {
+    margin: 7px;
+  }
+
+  .FormElement {
+    flex: 1;
+  }
+}
+
