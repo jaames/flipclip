@@ -22,8 +22,8 @@ export class ExportPanel extends Component {
   setStateSynchronously(newState) {
     return new Promise(resolve => {
       this.setState(newState, () => {
-        // react batches setState calls so resolution has to be delayed by one paint frame
-        requestAnimationFrame(resolve);
+        // react batches setState calls so resolution has to be delayed
+        setInterval(resolve, 0);
       });
     });
   }
