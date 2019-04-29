@@ -76,8 +76,10 @@ export class ClipExporter {
       for (let layerIndex = 0; layerIndex < layerCount; layerIndex++) {
         // (in clipnote, 0 is the bottom layer...)
         let clipnoteLayerIndex = layerCount - layerIndex - 1;
-        let layerData = this.getLayerData(frameIndex, clipnoteLayerIndex);
-        this.output.file(`${frameIndex},${layerIndex}.png`, layerData, {base64:true});
+        // get layer PNG image data
+        let layerData = this.getLayerData(frameIndex, layerIndex, clipnoteLayerIndex == 0);
+        // add layer image to zip
+        this.output.file(`${frameIndex},${clipnoteLayerIndex}.png`, layerData, {base64:true});
         // figure out progres percentage
         let imageIndex = frameIndex * layerCount + layerIndex;
         let progress = (imageIndex / imageCount) * 100;
@@ -89,6 +91,7 @@ export class ClipExporter {
   // load the palette for a given frame
   _loadFramePalette(frameIndex) {
     this.source.getFramePalette(frameIndex).forEach((color, index) => {
+      // convert an array of r, g, b values to a single uint32 color
       const [r, g, b] = color;
       this.palette[index] = ((0xff << 24) | (b << 16) | (g << 8) | r);
     });
@@ -100,6 +103,8 @@ export class ClipExporter {
     const imgData = new ImageData(new Uint8ClampedArray(this.pixelBuffer.buffer), this.sourceWidth, this.sourceHeight);
     // blit image data to canvas
     if (this.sourceType === 'PPM') {
+      // ppms are 256 * 192, but clipnote's canvas is 320 * 240
+      // so we just draw the ppm frame in the middle of the canvas with a blank border around it
       this.ctx.putImageData(imgData, 32, 24);
     } 
     else if (this.sourceType === 'KWZ') {
@@ -113,9 +118,29 @@ export class ClipExporter {
     this.pixelBuffer.fill(clearColor);
   }
 
+  _clearCanvas(clearColor=null) {
+    const intToHex = function(int) {
+      return int.toString(16).padStart(2, '0');
+    }
+    if (clearColor) {
+      // convert uint32 color to hex string
+      let r = (clearColor) & 0xFF;
+      let g = (clearColor >> 8) & 0xFF;
+      let b = (clearColor >> 16) & 0xFF;
+      let hexColor = '#' + intToHex(r) + intToHex(g) + intToHex(b);
+      console.log(hexColor);
+      this.ctx.fillStyle = hexColor;
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    } else {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+  }
+
   getFrameData(frameIndex) {
     this._loadFramePalette(frameIndex);
     const framePixels = this.source.getFramePixels(frameIndex);
+    // fill canvas with paper color
+    this._clearCanvas(this.palette[0]);
     // clear pixel buffer with paper color
     this._clearPixelBuffer(this.palette[0]);
     for (let index = 0; index < framePixels.length; index++) {
@@ -128,7 +153,7 @@ export class ClipExporter {
     return this._pixelBufferToImageData();
   }
 
-  getLayerData(frameIndex, layerIndex) {
+  getLayerData(frameIndex, layerIndex, isBottomLayer=false) {
     // decode frame if it hasn't been decoded yet
     if (this._currentFrame !== frameIndex) {
       this.frame = this.source.decodeFrame(frameIndex);
@@ -137,8 +162,14 @@ export class ClipExporter {
     }
     // get layer pixels
     const layer = this.frame[layerIndex];
-    // clear pixel buffer
-    this._clearPixelBuffer();
+
+    if (isBottomLayer) {
+      this._clearCanvas(this.palette[0]);
+      this._clearPixelBuffer(this.palette[0]);
+    } else {
+      this._clearCanvas();
+      this._clearPixelBuffer();
+    }
     // handle ppm layer
     if (this.sourceType === 'PPM') {
       const layerColor = this.palette[layerIndex + 1];
