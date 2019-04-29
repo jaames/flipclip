@@ -22,6 +22,7 @@
     "file-saver": "^2.0.1",
     "flipnote.js": "^2.3.4",
     "jszip": "^3.2.1",
+    "load-js": "^3.0.3",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-dropzone": "^10.1.4"

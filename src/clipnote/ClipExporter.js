@@ -1,5 +1,7 @@
 import JSZip from 'jszip';
-import { reject } from 'q';
+import loadJs from 'load-js';
+
+const VORBIS_ENCODER_PATH = process.env.NODE_ENV === 'production' ? process.env.PUBLIC_URL + '/lib/' : '/lib/';
 
 export class ClipExporter {
 
@@ -11,7 +13,18 @@ export class ClipExporter {
     const ctx = canvas.getContext('2d');
     this.canvas = canvas;
     this.ctx = ctx;
+    this._hasLoadedVorbisLib = false;
     if (source) this.loadSource(source);
+  }
+
+  async init() {
+    if (!this._hasLoadedVorbisLib) {
+      await loadJs([VORBIS_ENCODER_PATH + 'libvorbis.min.js']);
+      this._hasLoadedVorbisLib = true;
+      return true;
+    } else {
+      return true;
+    }
   }
 
   // source should be a flipnote.js kwz or ppm parser instance
@@ -68,6 +81,48 @@ export class ClipExporter {
     const thumbData = this.getFrameData(this.source.thumbFrameIndex);
     this.output.file('thumb.png', thumbData, {base64:true});
     return true;
+  }
+
+  writeAudio() {
+    return new Promise((resolve, reject) => {
+      const source = this.source;
+      // if vorbis lib is loaded + 
+      if (typeof window.VorbisEncoder !== 'undefined' && source.hasAudioTrack(0)) {
+        const audiorate = (1 / source.bgmrate) / (1 / source.framerate);
+        const sampleRate = source.sampleRate * audiorate;
+        const numChannels = 1;
+        const quality = .75;
+        // create decoder instance
+        // https://github.com/Garciat/libvorbis.js
+        const vorbis = new VorbisEncoder();
+
+        var chunks = [];
+          
+        vorbis.ondata = (data) => {
+          chunks.push(data);
+        };
+
+        vorbis.onfinish = () => {
+          // output .ogg to zip
+          const blob = new Blob(chunks, { type: 'audio/ogg' });
+          this.output.file('sound.ogg', blob);
+          resolve();
+        };
+
+        const pcmSamples = source.decodeAudio('bgm');
+        const samples = new Float32Array(pcmSamples.length);
+        // convet audio samples to float32, with range -1.0 to 1.0
+        pcmSamples.forEach((sample, index) => {
+          samples[index] = sample / 32768;
+        });
+
+        vorbis.init(numChannels, sampleRate, quality);
+        vorbis.encode([samples.buffer], samples.length, numChannels);
+        vorbis.finish();
+      } else {
+        resolve();
+      }
+    });
   }
 
   writeLayers(updateProgress) {

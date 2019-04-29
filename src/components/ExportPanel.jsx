@@ -38,19 +38,24 @@ export class ExportPanel extends Component {
       progressStatus: 'Preparing...',
       isConvertionInProgress: true
     });
+    await exporter.init();
     await exporter.loadSource(this.player.note);
     await this.setStateSynchronously({
-      progressStatus: 'Writing metadata...',
+      progressStatus: 'Converting metadata...',
     });
     await exporter.writeMeta()
     await this.setStateSynchronously({
-      progressStatus: 'Writing frames...',
+      progressStatus: 'Converting audio...',
+    });
+    await exporter.writeAudio()
+    await this.setStateSynchronously({
+      progressStatus: 'Converting frames...',
     });
     await exporter.writeLayers(async (progress) => {
       await this.setStateSynchronously({progress});
     })
     await this.setStateSynchronously({
-      progressStatus: 'Writing thumbnail...',
+      progressStatus: 'Converting thumbnail...',
     });
     await exporter.writeThumb();
     await this.setStateSynchronously({
