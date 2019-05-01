@@ -12,8 +12,19 @@ export class App extends Component {
       showExportPanel: false,
     };
     this.player = new Flipnote.player(document.createElement('canvas'));
-    this.player.setSmoothRendering(false);
     this.player.on('load', () => {
+      // disable smoothing
+      this.player.setSmoothRendering(false);
+      // use clipnote studio palette
+      this.player.setPalette({
+        WHITE:  [255, 255, 255],
+        BLACK:  [  0,   0,   0],
+        RED:    [255,  23,  23],
+        YELLOW: [255, 230,   0],
+        GREEN:  [  0, 130,  50],
+        BLUE:   [  0,  60, 200],
+        NONE:   [255, 255, 255],
+      });
       const type = this.player.note.type;
       if (type === 'KWZ') {
         this.player.resize(320, 240);
