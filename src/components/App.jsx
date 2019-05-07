@@ -43,6 +43,10 @@ export class App extends Component {
     this.loadFlipnote(files[0]);
   }
 
+  handleUrl(url) {
+    this.loadFlipnote(url);
+  }
+
   loadFlipnote(source) {
     this.setState({
       showExportPanel: false
@@ -61,8 +65,9 @@ export class App extends Component {
       <div className="Layout">
         {!state.showExportPanel && (
           <Index 
-            onUpload={files => this.handleFileUpload(files)
-          }/>
+            onUpload={files => this.handleFileUpload(files)}
+            onLoadUrl={url => this.handleUrl(url)}
+          />
         )}
         {state.showExportPanel && (
           <ExportPanel
