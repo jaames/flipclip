@@ -15,6 +15,7 @@ export class ClipConverter {
     this.ctx = ctx;
     this._hasLoadedVorbisLib = false;
     if (source) this.loadSource(source);
+    window.exporter = this;
   }
 
   async init() {
@@ -158,11 +159,17 @@ export class ClipConverter {
   }
 
   async writeLayer(frameIndex, layerIndex) {
-    const layerCount = this.sourceType === 'KWZ' ? 3 : 2;
-    // (in clipnote, 0 is the bottom layer...)
-    const clipnoteLayerIndex = layerCount - layerIndex - 1;
+    if (this.sourceType === 'PPM') {
+      var layerOrder = [1, 0];
+      var clipnoteLayerIndex = layerOrder.length - layerIndex - 1;
+    }
+    else if (this.sourceType === 'KWZ') {
+      var layerOrder = this.source.getLayerOrder(frameIndex).reverse();
+      var clipnoteLayerIndex = layerOrder.length - layerIndex - 1;
+      layerIndex = layerOrder[layerIndex];
+    }
     // get layer PNG image data
-    const layerData = this.getLayerData(frameIndex, layerIndex, clipnoteLayerIndex == 0);
+    const layerData = this.getLayerData(frameIndex, layerIndex, clipnoteLayerIndex === 0);
     // add layer image to zip
     this.output.file(`${frameIndex},${clipnoteLayerIndex}.png`, layerData, {base64:true});
     return true;
@@ -223,25 +230,21 @@ export class ClipConverter {
     // clear pixel buffer with paper color
     this._clearPixelBuffer(this.palette[0]);
     for (let index = 0; index < framePixels.length; index++) {
-      if (framePixels[index] === 0) { // skip transparent pixels
+      let pixel = framePixels[index];
+      if (pixel === 0) { // skip transparent pixels
         continue;
       } else {
-        this.pixelBuffer[index] = this.palette[framePixels[index]];
+        this.pixelBuffer[index] = this.palette[pixel];
       }
     }
     return this._pixelBufferToImageData();
   }
 
   getLayerData(frameIndex, layerIndex, isBottomLayer=false) {
-    // decode frame if it hasn't been decoded yet
-    if (this._currentFrame !== frameIndex) {
-      this.frame = this.source.decodeFrame(frameIndex);
-      this._currentFrame = frameIndex;
-      this._loadFramePalette(frameIndex);
-    }
     // get layer pixels
-    const layer = this.frame[layerIndex];
-
+    this._loadFramePalette(frameIndex);
+    const layer = this.source.getLayerPixels(frameIndex, layerIndex);
+    // clear prev image
     if (isBottomLayer) {
       this._clearCanvas(this.palette[0]);
       this._clearPixelBuffer(this.palette[0]);
@@ -249,42 +252,15 @@ export class ClipConverter {
       this._clearCanvas();
       this._clearPixelBuffer();
     }
-    // handle ppm layer
-    if (this.sourceType === 'PPM') {
-      const layerColor = this.palette[layerIndex + 1];
-      for (let index = 0; index < layer.length; index++) {
-        let pixel = layer[index];
-        // skip transparent pixel
-        if (pixel === 0) {
-          continue;
-        } 
-        else {
-          this.pixelBuffer[index] = layerColor;
-        }
+    // convert layer to rgba pixel buffer
+    for (let index = 0; index < layer.length; index++) {
+      let pixel = layer[index];
+      if (pixel === 0) { // skip transparent pixels
+        continue;
+      } else {
+        this.pixelBuffer[index] = this.palette[pixel];
       }
     }
-    // handle kwz layer
-    else if (this.sourceType === 'KWZ') {
-      // cast layer as uint16 array
-      const layerPixels = new Uint16Array(layer.buffer);
-      const paletteOffset = 1 + (layerIndex * 2);
-      for (let index = 0; index < layerPixels.length; index++) {
-        let pixel = layerPixels[index];
-        // transparent (skip)
-        if (pixel === 0) {
-          continue;
-        }
-        // layer color 1
-        else if (pixel & 0xff00) {
-          this.pixelBuffer[index] = this.palette[paletteOffset];
-        }
-        // layer color 2
-        else if (pixel & 0x00ff) {
-          this.pixelBuffer[index] = this.palette[paletteOffset + 1];
-        }
-      }
-    }
-    
     return this._pixelBufferToImageData();
   }
 
