@@ -69,7 +69,7 @@ export class FlipnotePlayer extends Component {
     return (
       <div className={`Player Player--${noteType} ${props.disabled ? 'disabled' : ''}`}>
         <div className="Player__canvasBox">
-          <div className="Player__canvas" ref={el => this._canvasWrapper = el}></div>
+          <div className="Player__canvas" ref={el => this._canvasWrapper = el} style={{background: props.backgroundColor}}></div>
         </div>
         <div className="Player__controls">
           <i className="uil uil-backward" onClick={e => this.player.firstFrame()}></i>

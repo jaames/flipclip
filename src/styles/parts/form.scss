@@ -1,9 +1,9 @@
 
 .Input {
-  height: 42px;
+  height: 36px;
   border: 2px solid $secondary-background-color;
   border-radius: 4px;
-  padding: 7px 14px;
+  padding: 4px 12px;
 
   &:disabled {
     color: #444;
@@ -15,9 +15,15 @@
 label {
   color: $secondary-text-color;
   font-size: 0.9em;
+  margin-bottom: 3.5px;
+  display: block
 }
 
-.TextInput {
+.TextInput, .ColorInput, .SwitchInput {
+  display: block;
+}
+
+.TextInput, .ColorInput {
   width: 100%;
 }
 
@@ -28,6 +34,7 @@ label {
 
   & > .Input, & > .Button, & > .FormElement {
     margin: 7px;
+    margin-bottom: 0;
   }
 
   .FormElement {
@@ -35,3 +42,39 @@ label {
   }
 }
 
+.switch {
+  border: 2px solid $secondary-background-color;
+  width: 52px;
+  height: 28px;
+  margin-bottom: -2px;
+  margin-top: 2px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: inline-block;
+  transition: border-color .2s;
+}
+
+.switch-toggle {
+  border: 2px solid $secondary-background-color;
+  width: 20px;
+  height: 20px;
+  left: 2px;
+  top: 2px;
+  border-radius: 14px;
+  background: white;
+  position: relative;
+  transition: left .2s, border-color .2s;
+}
+
+.switch.on {
+  border-color: $primary-color;
+}
+
+.switch.on .switch-toggle {
+  left: 26px;
+  border-color: $primary-color;
+}
+
+.switch.disabled {
+  cursor: not-allowed;
+}

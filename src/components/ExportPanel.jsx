@@ -1,8 +1,9 @@
 import { Component } from 'react';
 import { FlipnotePlayer } from './FlipnotePlayer';
+import { ClipConverter } from '../clipnote/ClipConverter';
 
 import { saveAs } from 'file-saver';
-import { ClipConverter } from '../clipnote/ClipConverter';
+import Switch from 'react-toggle-switch';
 
 const converter = new ClipConverter();
 
@@ -14,8 +15,11 @@ export class ExportPanel extends Component {
     this.state = {
       progress: 0,
       isConvertionInProgress: false,
+      inputType: this.player.note.type,
       outputName: `${meta.current.filename}.clip`,
-      userId: ''
+      userId: '',
+      frameColor: '#ffffff',
+      usePaper: true,
     };
   }
 
@@ -39,7 +43,10 @@ export class ExportPanel extends Component {
       progressStatus: 'Preparing...',
       isConvertionInProgress: true
     });
-    await converter.init();
+    await converter.init({
+      frameColor: this.state.frameColor,
+      usePaper: this.state.usePaper
+    });
     await converter.loadSource(this.player.note);
     await this.setStateSynchronously({
       progressStatus: 'Converting metadata...',
@@ -90,9 +97,33 @@ export class ExportPanel extends Component {
             <h3>Flipnote by {meta.current.username}</h3>
           </div>
           <FlipnotePlayer
+            backgroundColor= { state.frameColor }
             player={ this.player }
             disabled={ state.isConvertionInProgress }
           />
+          <div className="FormGroup">
+            { state.inputType === 'PPM' && (
+              <div className="FormElement">
+                <label htmlFor="frameColor">Frame color</label>
+                <input
+                  className="Input ColorInput"
+                  id="frameColor"
+                  type="color"
+                  value={state.frameColor}
+                  disabled={state.isConvertionInProgress}
+                  onChange={e => this.setState({frameColor: e.target.value})}
+                />
+              </div>
+            )}
+            <div className="FormElement">
+              <label htmlFor="usePaper">Use paper background</label>
+              <Switch
+                className="SwitchInput"
+                onClick={e => this.setState({usePaper: !state.usePaper})}
+                on={state.usePaper}
+              />
+            </div>
+          </div>
           <div className="FormGroup">
             <div className="FormElement">
               <label htmlFor="outputName">Filename</label>

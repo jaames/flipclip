@@ -14,11 +14,15 @@ export class ClipConverter {
     this.canvas = canvas;
     this.ctx = ctx;
     this._hasLoadedVorbisLib = false;
+    this.usePaper = true;
+    this.frameColor = null;
     if (source) this.loadSource(source);
     window.exporter = this;
   }
 
-  async init() {
+  async init({ usePaper, frameColor }) {
+    this.usePaper = usePaper;
+    this.frameColor = frameColor;
     if (!this._hasLoadedVorbisLib) {
       await loadJs(VORBIS_ENCODER_PATH + 'libvorbis.min.js');
       this._hasLoadedVorbisLib = true;
@@ -169,7 +173,7 @@ export class ClipConverter {
       layerIndex = layerOrder[layerIndex];
     }
     // get layer PNG image data
-    const layerData = this.getLayerData(frameIndex, layerIndex, clipnoteLayerIndex === 0);
+    const layerData = this.getLayerData(frameIndex, layerIndex, this.usePaper && clipnoteLayerIndex === 0);
     // add layer image to zip
     this.output.file(`${frameIndex},${clipnoteLayerIndex}.png`, layerData, {base64:true});
     return true;
@@ -210,12 +214,16 @@ export class ClipConverter {
       return int.toString(16).padStart(2, '0');
     }
     if (clearColor) {
-      // convert uint32 color to hex string
-      let r = (clearColor) & 0xFF;
-      let g = (clearColor >> 8) & 0xFF;
-      let b = (clearColor >> 16) & 0xFF;
-      let hexColor = '#' + intToHex(r) + intToHex(g) + intToHex(b);
-      this.ctx.fillStyle = hexColor;
+      if (Array.isArray(clearColor)) {
+        // convert uint32 color to hex string
+        let r = (clearColor) & 0xFF;
+        let g = (clearColor >> 8) & 0xFF;
+        let b = (clearColor >> 16) & 0xFF;
+        let hexColor = '#' + intToHex(r) + intToHex(g) + intToHex(b);
+        this.ctx.fillStyle = hexColor;
+      } else if (typeof clearColor === 'string') {
+        this.ctx.fillStyle = clearColor;
+      }
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     } else {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -226,7 +234,7 @@ export class ClipConverter {
     this._loadFramePalette(frameIndex);
     const framePixels = this.source.getFramePixels(frameIndex);
     // fill canvas with paper color
-    this._clearCanvas(this.palette[0]);
+    this._clearCanvas(this.frameColor ? this.frameColor : this.palette[0]);
     // clear pixel buffer with paper color
     this._clearPixelBuffer(this.palette[0]);
     for (let index = 0; index < framePixels.length; index++) {
@@ -246,7 +254,7 @@ export class ClipConverter {
     const layer = this.source.getLayerPixels(frameIndex, layerIndex);
     // clear prev image
     if (isBottomLayer) {
-      this._clearCanvas(this.palette[0]);
+      this._clearCanvas(this.frameColor ? this.frameColor : this.palette[0]);
       this._clearPixelBuffer(this.palette[0]);
     } else {
       this._clearCanvas();
