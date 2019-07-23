@@ -143,7 +143,7 @@ export class ClipConverter {
         await updateProgress(100);
         done();
       } else {
-        let frameIndex = Math.floor(imageIndex / 3);
+        let frameIndex = Math.floor(imageIndex / layerCount);
         let layerIndex = imageIndex % layerCount;
         // write layer
         this.writeLayer(frameIndex, layerIndex);
