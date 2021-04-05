@@ -1,9 +1,11 @@
 import '../styles/main.scss';
 import { Component } from 'react';
 
-import Flipnote from 'flipnote.js';
+import * as Flipnote from 'flipnote.js';
 import { Index } from './Index';
 import { ExportPanel } from './ExportPanel';
+
+// console.log(Flipnote)
 
 export class App extends Component {
   constructor(props) {
@@ -11,21 +13,9 @@ export class App extends Component {
     this.state = {
       showExportPanel: false,
     };
-    this.player = new Flipnote.player(document.createElement('canvas'));
+    this.player = new Flipnote.Player(document.createElement('canvas'));
     this.player.on('load', () => {
-      // disable smoothing
-      this.player.setSmoothRendering(false);
-      // use clipnote studio palette
-      this.player.setPalette({
-        WHITE:  [255, 255, 255],
-        BLACK:  [  0,   0,   0],
-        RED:    [255,  23,  23],
-        YELLOW: [255, 230,   0],
-        GREEN:  [  0, 130,  50],
-        BLUE:   [  0,  60, 200],
-        NONE:   [255, 255, 255],
-      });
-      const type = this.player.note.type;
+      const type = this.player.noteFormat;
       if (type === 'KWZ') {
         this.player.resize(320, 240);
       }
@@ -51,11 +41,11 @@ export class App extends Component {
     this.setState({
       showExportPanel: false
     });
-    this.player.open(source);
+    this.player.load(source);
   }
 
   unloadFlipnote() {
-    this.player.close()
+    this.player.closeNote()
     this.setState({showExportPanel: false})
   }
 

@@ -20,7 +20,7 @@
   "dependencies": {
     "css-reset-and-normalize": "^2.0.1",
     "file-saver": "^2.0.1",
-    "flipnote.js": "^2.6.0",
+    "flipnote.js": "^5.3.0",
     "jszip": "^3.2.1",
     "load-js": "^3.0.3",
     "react": "^16.8.6",

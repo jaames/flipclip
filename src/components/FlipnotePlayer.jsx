@@ -13,11 +13,11 @@ export class FlipnotePlayer extends Component {
   componentDidMount() {
     this.player = this.props.player;
     this._wasPlaying = false;
-    this._canvasWrapper.appendChild(this.player.canvas.el);
+    this._canvasWrapper.appendChild(this.player.canvasEl);
   }
 
   componentWillUnmount() {
-    this._canvasWrapper.removeChild(this.player.canvas.el);
+    this._canvasWrapper.removeChild(this.player.canvasEl);
     this._wasPlaying = false;
     this.player = null;
   }
@@ -65,7 +65,7 @@ export class FlipnotePlayer extends Component {
 
   render() {
     const { props, state } = this;
-    const noteType = props.player.note.type.toLowerCase()
+    const noteType = props.player.noteFormat;
     return (
       <div className={`Player Player--${noteType} ${props.disabled ? 'disabled' : ''}`}>
         <div className="Player__canvasBox">

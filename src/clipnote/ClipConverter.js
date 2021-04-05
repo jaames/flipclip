@@ -3,6 +3,23 @@ import loadJs from 'load-js';
 
 const VORBIS_ENCODER_PATH = process.env.NODE_ENV === 'production' ? process.env.PUBLIC_URL + '/lib/' : '/lib/';
 
+const KWZ_PALETTE = [
+  [255, 255, 255, 255],
+  [  0,   0,   0, 255],
+  [255,  23,  23, 255],
+  [255, 230,   0, 255],
+  [  0, 130,  50, 255],
+  [  0,  60, 200, 255],
+  [255, 255, 255, 0],
+];
+
+const PPM_PALETTE = [
+  [255, 255, 255, 255],
+  [  0,   0,   0, 255],
+  [255,  23,  23, 255],
+  [  0,  60, 200, 255],
+];
+
 export class ClipConverter {
 
   constructor(source) {
@@ -40,12 +57,14 @@ export class ClipConverter {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     // set source attributes
     this.source = source;
-    this.sourceType = source.type;
+    this.sourceType = source.format;
     if (this.sourceType === 'KWZ') {
+      this.source.globalPalette = KWZ_PALETTE;
       this.sourceWidth = 320;
       this.sourceHeight = 240;
     } 
     else if (this.sourceType === 'PPM') {
+      this.source.globalPalette = PPM_PALETTE;
       this.sourceWidth = 256;
       this.sourceHeight = 192;
     }
@@ -91,10 +110,9 @@ export class ClipConverter {
   writeAudio() {
     return new Promise((resolve, reject) => {
       const source = this.source;
-      // if vorbis lib is loaded + 
-      if (typeof window.VorbisEncoder !== 'undefined' && source.hasAudioTrack(0)) {
-        const audiorate = (1 / source.bgmrate) / (1 / source.framerate);
-        const sampleRate = source.sampleRate * audiorate;
+      // if vorbis lib is loaded
+      if (typeof window.VorbisEncoder !== 'undefined') {
+        const sampleRate = source.sampleRate;
         const numChannels = 1;
         const quality = .75;
         // create decoder instance
@@ -114,11 +132,11 @@ export class ClipConverter {
           resolve();
         };
 
-        const pcmSamples = source.decodeAudio('bgm');
+        const pcmSamples = source.getAudioMasterPcm();
         const samples = new Float32Array(pcmSamples.length);
         // convet audio samples to float32, with range -1.0 to 1.0
         pcmSamples.forEach((sample, index) => {
-          samples[index] = sample / 32768;
+          samples[index] = sample / 32767;
         });
 
         vorbis.init(numChannels, sampleRate, quality);
@@ -168,7 +186,7 @@ export class ClipConverter {
       var clipnoteLayerIndex = layerOrder.length - layerIndex - 1;
     }
     else if (this.sourceType === 'KWZ') {
-      var layerOrder = this.source.getLayerOrder(frameIndex).reverse();
+      var layerOrder = this.source.getFrameLayerOrder(frameIndex).reverse();
       var clipnoteLayerIndex = layerOrder.length - layerIndex - 1;
       layerIndex = layerOrder[layerIndex];
     }
